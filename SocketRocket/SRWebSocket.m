@@ -251,6 +251,8 @@ typedef void (^data_callback)(SRWebSocket *webSocket,  NSData *data);
 
 @synthesize delegate = _delegate;
 @synthesize url = _url;
+@synthesize socksHost = _socksHost;
+@synthesize socksPort = _socksPort;
 @synthesize readyState = _readyState;
 @synthesize protocol = _protocol;
 
@@ -261,7 +263,7 @@ static __strong NSData *CRLFCRLF;
     CRLFCRLF = [[NSData alloc] initWithBytes:"\r\n\r\n" length:4];
 }
 
-- (id)initWithURLRequest:(NSURLRequest *)request protocols:(NSArray *)protocols allowsUntrustedSSLCertificates:(BOOL)allowsUntrustedSSLCertificates;
+- (id)initWithURLRequest:(NSURLRequest *)request protocols:(NSArray *)protocols allowsUntrustedSSLCertificates:(BOOL)allowsUntrustedSSLCertificates socksHost:(NSString *)socksHost socksPort:(NSUInteger)socksPort
 {
     self = [super init];
     if (self) {
@@ -272,10 +274,19 @@ static __strong NSData *CRLFCRLF;
         
         _requestedProtocols = [protocols copy];
         
+        _socksPort = socksPort;
+        
+        _socksHost = socksHost;
+        
         [self _SR_commonInit];
     }
     
     return self;
+}
+
+- (id)initWithURLRequest:(NSURLRequest *)request protocols:(NSArray *)protocols allowsUntrustedSSLCertificates:(BOOL)allowsUntrustedSSLCertificates;
+{
+    return [self initWithURLRequest:request protocols:protocols allowsUntrustedSSLCertificates:allowsUntrustedSSLCertificates socksHost:nil socksPort:NSNotFound];
 }
 
 - (id)initWithURLRequest:(NSURLRequest *)request protocols:(NSArray *)protocols;
@@ -297,6 +308,12 @@ static __strong NSData *CRLFCRLF;
 {
     NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:url];    
     return [self initWithURLRequest:request protocols:protocols];
+}
+
+- (id)initWithURL:(NSURL *)url protocols:(NSArray *)protocols allowsUntrustedSSLCertificates:(BOOL)allowsUntrustedSSLCertificates socksHost:(NSString *)socksHost socksPort:(NSUInteger)socksPort
+{
+    NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:url];
+    return [self initWithURLRequest:request protocols:protocols allowsUntrustedSSLCertificates:allowsUntrustedSSLCertificates socksHost:socksHost socksPort:socksPort];
 }
 
 - (id)initWithURL:(NSURL *)url protocols:(NSArray *)protocols allowsUntrustedSSLCertificates:(BOOL)allowsUntrustedSSLCertificates;
@@ -585,6 +602,30 @@ static __strong NSData *CRLFCRLF;
     CFWriteStreamRef writeStream = NULL;
     
     CFStreamCreatePairWithSocketToHost(NULL, (__bridge CFStringRef)host, port, &readStream, &writeStream);
+    
+    if (self.socksHost && self.socksPort != NSNotFound) {
+        CFDictionaryRef proxyDict = CFNetworkCopySystemProxySettings();
+        CFMutableDictionaryRef socksConfig = CFDictionaryCreateMutableCopy(NULL, 0, proxyDict);
+        CFDictionarySetValue(socksConfig, kCFStreamPropertySOCKSProxyHost, (__bridge CFStringRef)self.socksHost);
+        CFDictionarySetValue(socksConfig, kCFStreamPropertySOCKSProxyPort, (__bridge CFNumberRef)[NSNumber numberWithInt:self.socksPort]);
+        CFDictionarySetValue(socksConfig, kCFStreamPropertySOCKSVersion, kCFStreamSocketSOCKSVersion4);
+        
+        // set SOCKS for read streams
+        if (!CFReadStreamSetProperty(readStream, kCFStreamPropertySOCKSProxy, socksConfig)) {
+            CFStreamError error = CFReadStreamGetError(readStream);
+            NSLog(@"[SEVERE] Web Socket Read Stream Error: %ld[%ld]", error.domain, error.error);
+        }
+        
+        // set SOCKS for write stream
+        if (!CFWriteStreamSetProperty(writeStream, kCFStreamPropertySOCKSProxy, socksConfig)) {
+            CFStreamError error = CFWriteStreamGetError(writeStream);
+            NSLog(@"[SEVERE] Web Socket Write Stream Error: %ld[%ld]", error.domain, error.error);
+        }
+        
+        // Release
+        CFRelease(socksConfig);
+        CFRelease(proxyDict);
+    }
     
     _outputStream = CFBridgingRelease(writeStream);
     _inputStream = CFBridgingRelease(readStream);
