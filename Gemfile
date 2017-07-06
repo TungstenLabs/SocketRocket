@@ -1,3 +1,4 @@
 source 'https://rubygems.org'
 
-gem 'cocoapods', '0.37.2'
+gem 'cocoapods', '~> 1.2.0'
+gem 'fastlane'
