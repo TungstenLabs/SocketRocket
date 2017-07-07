@@ -14,16 +14,18 @@ lane :publish do
 
   add_git_tag(tag: pod_version)
   push_git_tags
-
-  sh('bundle exec pod repo remove ynd')
-  sh('bundle exec pod repo add ynd git@bitbucket.org:ynd-consult-gmbh/cocoapods-spec-repo.git')
   
+  pod_repo_add(
+    repo_name: "ynd", 
+    repo_url: "git@bitbucket.org:ynd-consult-gmbh/cocoapods-spec-repo.git"
+  )
+
   pod_push(
-    path: "SocketRocket.podspec", 
-    allow_warnings:true, 
-    repo: "ynd", 
+    path: "SocketRocket.podspec",
+    allow_warnings:true,
+    repo: "ynd",
     sources: [
-      "git@bitbucket.org:ynd-consult-gmbh/cocoapods-spec-repo.git", 
+      "git@bitbucket.org:ynd-consult-gmbh/cocoapods-spec-repo.git",
       "https://github.com/CocoaPods/Specs"
     ]
   )
