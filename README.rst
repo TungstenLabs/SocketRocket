@@ -11,6 +11,7 @@ SocketRocket currently conforms to all ~300 of `Autobahn
 <http://autobahn.ws/testsuite/>`_'s fuzzing tests (aside from
 two UTF-8 ones where it is merely *non-strict*. tests 6.4.2 and 6.4.4)
 
+
 Features/Design
 ---------------
 - TLS (wss) support.  It uses CFStream so we get this for *free*
