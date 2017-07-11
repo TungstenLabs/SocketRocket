@@ -22,3 +22,11 @@ profile
 *.moved-aside
 DerivedData
 extern/
+
+/fastlane/Appfile
+/fastlane/README.md
+/fastlane/report.xml
+
+/.bundle
+/vendor
+
