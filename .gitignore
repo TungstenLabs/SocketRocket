@@ -22,6 +22,7 @@ profile
 *.moved-aside
 DerivedData
 extern/
+*.pyc
 
 /fastlane/Appfile
 /fastlane/README.md
@@ -29,4 +30,3 @@ extern/
 
 /.bundle
 /vendor
-
