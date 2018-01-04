@@ -253,6 +253,12 @@ DEPRECATED_MSG_ATTRIBUTE("Disabling certificate chain validation is unsafe. "
  */
 - (void)close;
 
+
+/**
+ Closes a web socket and notifies delegate
+ */
+- (void)closeConnectionAndNotify;
+
 /**
  Closes a web socket using a given code and reason.
  
