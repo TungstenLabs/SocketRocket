@@ -505,7 +505,7 @@ NSString *const SRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
     [self closeWithCode:SRStatusCodeNormal reason:nil];
 }
 
--(void)closeAndNotify
+-(void)closeConnectionAndNotify
 {
     dispatch_async(_workQueue, ^{
         [self closeConnection];
