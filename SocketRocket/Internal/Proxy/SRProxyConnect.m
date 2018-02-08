@@ -342,7 +342,7 @@
         NSMutableDictionary *settings = [NSMutableDictionary dictionary];
         settings[NSStreamSOCKSProxyHostKey] = _socksHost;
         settings[NSStreamSOCKSProxyPortKey] = @(_socksPort);
-        settings[NSStreamSOCKSProxyVersionKey] = NSStreamSOCKSProxyVersion4;
+        settings[NSStreamSOCKSProxyVersionKey] = NSStreamSOCKSProxyVersion5;
         
         [self.inputStream setProperty:settings forKey:NSStreamSOCKSProxyConfigurationKey];
         [self.outputStream setProperty:settings forKey:NSStreamSOCKSProxyConfigurationKey];
